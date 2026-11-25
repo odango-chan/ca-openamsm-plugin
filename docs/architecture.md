@@ -19,7 +19,7 @@ It owns:
 - external Nsmf/Namf HTTP/2 SBI listener and wire protocol handling;
 - multipart parsing and Content-ID association;
 - protocol-to-normalized-Event mapping;
-- raw N1/N2 binary extraction and Host Artifact Handoff; preserve original bytes without eager deep decoding;
+- raw N1/N2 binary extraction and Host Artifact Handoff; minimal NAS discriminator extraction only when required for Event normalization; preserve original bytes without eager deep decoding;
 - SBI response serialization, including Host-supplied status, headers and public resource URI.
 
 It does not own:
@@ -139,7 +139,7 @@ The Plugin publishes only:
 - protocol source and stable external request identity;
 - Host Artifact references after ingress acceptance.
 
-It does not select or name a Skill. It also does not eagerly decode N1/N2 for business reasoning. The current SBI operation and normalized JSON fields provide the Event information needed by the Host Resolver; protocol payload decoding is an optional Skill action.
+It does not select or name a Skill. It also does not eagerly decode N1/N2 for business reasoning. It may extract only the minimum NAS message discriminator needed to normalize a shared SBI operation such as UpdateSMContext (Modify versus UE-requested Release). This is protocol-to-Event classification, not Skill selection or full business decoding. The Host Resolver still selects the Skill. Deeper protocol fields remain available through on-demand Codec Tools.
 
 ### 3.1 On-demand protocol decoding
 
@@ -247,7 +247,7 @@ Protocol Codec is a callable Tool capability, not an internal decoder embedded i
 - When the accepted codec API and Phase C consumer integration are available, expose the required NAS/NGAP/N2 Decode/Encode operations through the existing Tool Interface Package and `tools` extension.
 - The selected Skill calls Decode only when it needs protocol fields. If it does not, the original artifact reference is passed to the business Tool unchanged.
 - The Event Plugin remains responsible for SBI framing, multipart parsing, Content-ID association and raw byte handoff. It does not call a second codec worker or duplicate codec logic.
-- The current SBI operation identifies the Event, so no deep decode is required merely for initial Skill selection. A future direct NAS/NGAP ingress may require a separate minimal pre-routing design; it is not part of this SBI slice.
+- The SBI operation provides the base Event type, but UpdateSMContext can represent both Modify and UE-requested Release. The Event Plugin must therefore extract only the minimal NAS discriminator needed to normalize these cases before publishing the Event. This is not a Skill-selection decision or a full PDU/IE decode. Reuse the shared codec implementation from ca-client-tools for the exact supported message subset; if that discriminator is not supported, block the integration rather than add a second parser. The Host Resolver selects the Skill from the normalized Event. A future direct NAS/NGAP ingress is a separate scope.
 
 Reuse the shared Go codec from ca-client-tools when its public API is merged/released and Phase C consumer migration is complete. Do not copy Free5GC codec code or launch a second worker from this Plugin.
 
@@ -267,7 +267,7 @@ PR #39 reports Phase B final pass, but it is OPEN and Phase C consumer migration
 
 | Existing ca-agent-demo responsibility | Destination |
 |---|---|
-| Nsmf/Namf HTTP/2 listener, HTTP wire parsing, multipart/Content-ID, raw N1/N2 extraction/staging and SBI response encoding | ca-openamsm-plugin |
+| Nsmf/Namf HTTP/2 listener, HTTP wire parsing, multipart/Content-ID, raw N1/N2 extraction/staging, minimal NAS event discriminator and SBI response encoding | ca-openamsm-plugin |
 | External protocol normalization and Event Schema | ca-openamsm-plugin |
 | Plugin lifecycle, common IPC, Event Schema validation and dispatch | ca-agent-next Plugin Manager |
 | Skill import, SkillCatalog, when evaluation and Skill selection | ca-agent-next Host / Resolver |
