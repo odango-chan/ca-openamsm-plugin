@@ -79,6 +79,7 @@ For this Demo, manifest import is automatic. No package approval, signature, PKI
        - optional Host-selected CA-SL Skill
        - Host Tool/Provider boundary and authorization
        - response Schema and business outcome validation
+       - Host resource/alias map and public resource URI generation
        - HostArtifactStore and delivery records
        ▼
     Existing ca-client-tools Provider
@@ -89,7 +90,7 @@ For this Demo, manifest import is automatic. No package approval, signature, PKI
     OpenAMSM Owner / SMF
        - authoritative SM Context identity, existence and lifecycle
 
-The Plugin converts external protocol messages into events and structured protocol responses. It does not decide how the Agent performs the work.
+The Host owns resource/alias mapping and supplies the public resource URI. The Plugin renders that URI into the SBI Location header and owns wire-level response serialization. The Plugin converts external protocol messages into events and structured protocol responses; it does not maintain a second resource database or decide how the Agent performs the work.
 
 ## 5. Generic Agent and optional Skill path
 
@@ -133,15 +134,13 @@ N1 NAS, N2 NGAP and multipart binary parts must not be Base64-embedded in Event 
 
 The Plugin declares typed artifact slots and associates the received raw bytes with protocol Content-ID. The Host owns the handoff and custody:
 
-1. Plugin transfers the raw bytes through a Host-managed local handoff.
-2. Host verifies the actual bytes, length and digest.
-3. Host stores immutable content in the existing HostArtifactStore.
-4. Host attaches the artifact reference to the accepted Run in RunStore before ACK or execution.
-5. Host resolves inbound artifacts only for the authorized Provider/Runtime operation.
-6. Host exposes exact outbound artifacts only to the original Plugin delivery binding for that Run/obligation.
-7. Plugin encodes the authorized bytes into the SBI response.
+1. Host creates a temporary per-Plugin staging directory and supplies it in host.initialize when T3 artifact transfer is enabled.
+2. Plugin writes raw N1/N2 bytes under that directory and sends only a relative filename plus slot, media type, Content-ID, byte length and SHA-256 in the NDJSON event.
+3. Host reads and verifies the actual bytes, imports immutable content into the existing HostArtifactStore, and attaches the reference to the Run in RunStore before ACK or execution.
+4. For outbound data, Host writes only the authorized response artifact into the staging directory and dispatches its descriptor; Plugin reads the raw bytes and encodes the SBI response.
+5. Host cleans temporary files after import/delivery and on restart.
 
-The exact local byte-transfer mechanism is a T3 implementation decision. The ownership is not: HostArtifactStore and RunStore remain authoritative. T2 is JSON-only and does not implement binary handoff.
+This simple local file handoff keeps binary bytes out of NDJSON and avoids Base64, a new network service or a Plugin database. HostArtifactStore and RunStore remain authoritative. T2 is JSON-only and does not receive an artifact staging directory.
 
 ## 8. Codec reuse
 
