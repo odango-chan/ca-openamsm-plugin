@@ -8,12 +8,14 @@ The Host starts one long-lived Go executable using operator-configured argv and 
 
 | Component | Authority |
 | --- | --- |
-| Go Plugin | Transport and AMF peer authentication, Nsmf wire parsing, multipart/Content-ID association, protocol-level NAS/N2 decode, normalized event Schema and mapping, SBI response encoding and delivery. |
-| Host | Operator configuration, event Schema validation, Root routing and projection, Admission/READY, durable Run identity and replay, session/SM context binding, public resource identity and Location, private artifact custody, delivery records and optional built-in orchestration. |
+| Go Plugin | Transport and AMF peer authentication, Nsmf wire parsing, multipart/Content-ID association, protocol-level NAS/N2 decode, normalized event Schema and mapping, SBI resource representation and alias resolution where needed, response encoding and delivery. |
+| Host | Operator configuration, event Schema validation, Root routing and projection, Admission/READY, durable Run identity and replay, scoped opaque Run-to-resource correlation, private artifact custody, delivery records and optional built-in orchestration. |
 | CA-SL Runtime | Executes the admitted Procedure once per accepted invocation path and enforces Root-scoped Capability/Operation authorization and Effect semantics. |
-| Tool Provider and Owner | The published Interface Package defines public tools, Schemas, Capabilities and Effects. The Provider performs bound Owner calls via its own connection. The Owner is authoritative for business effects. The Host/Runtime verifies evidence and preserves UNKNOWN, using exact-original reconcile where authorized. |
+| Tool Provider and Owner | The published Interface Package defines public tools, Schemas, Capabilities and Effects. The Provider performs bound Owner calls via its own connection. The Owner/SMF is authoritative for SM Context identity, existence and Create/Modify/Release transitions. The Host/Runtime verifies evidence and preserves UNKNOWN, using exact-original reconcile where authorized. |
 
-A protocol ACK or successful SBI delivery cannot establish a committed mutation. The Plugin receives the authorized response data needed to render the wire reply. Resource allocation and lifecycle transitions remain Host decisions.
+A protocol ACK or successful SBI delivery cannot establish a committed mutation. The Plugin receives the authorized response data needed to render the wire reply. The Generic Host may persist a scoped opaque resource reference for Run correlation and authorized private material access. The OpenAMSM Plugin owns SBI representation, including public `Location`, alias resolution where needed, and protocol status mapping. The OpenAMSM Owner/SMF owns authoritative SM Context identity, existence and Create/Modify/Release transitions. Plugin mappings and Host correlation records carry no authority over business state.
+
+An identical Release replay resolves to its original Run without another dispatch. A distinct request for a released context follows the authorized Owner path. The Plugin maps the Owner's result to the SBI response, preserving ambiguity when the business outcome is UNKNOWN.
 
 ## Stable event identity and response obligation
 
@@ -29,7 +31,7 @@ T3 requires a separately reviewed transfer binding. Candidate reuse is the Host'
 
 ## Codec reuse and migration
 
-Evaluate maintained Go NAS and NGAP/N2 codecs for the chosen 3GPP profile, pinned versions, compatible licenses, relevant message/IE coverage and malformed-input handling. Keep codec adapters pure where possible and compare behavior against sanitized cross-language golden vectors. Keep SBI multipart handling, event projection and response formatting outside reusable codecs. A protocol decode mapping does not replace an already-authorized Provider READ used by a Procedure. The first extraction moves the listener, wire parsing, normalization and serialization seams only. Retain existing Host lifecycle and Provider execution semantics until equivalence is demonstrated.
+Evaluate maintained Go NAS and NGAP/N2 codecs for the chosen 3GPP profile, pinned versions, compatible licenses, relevant message/IE coverage and malformed-input handling. Keep codec adapters pure where possible and compare behavior against sanitized cross-language golden vectors. Keep SBI multipart handling, event projection and response formatting outside reusable codecs. A protocol decode mapping does not replace an already-authorized Provider READ used by a Procedure. The first extraction covers the listener, wire parsing, normalization, serialization and any required SBI alias mapping. Treat existing Host-side Nsmf lifecycle behavior as regression evidence while moving lifecycle authority to the Owner boundary. Retain the existing Provider execution path.
 
 ## Acceptance sequence
 
@@ -39,6 +41,6 @@ Evaluate maintained Go NAS and NGAP/N2 codecs for the chosen 3GPP profile, pinne
 | T1 | Host Tool cutover acceptance, including independent Provider/Skill proof, is tracked by the Host project. |
 | T2 | An independent non-5GC adapter exercises the built Host wheel, normal Admission/READY, existing Runtime/Provider and paired delivery using deployment configuration only. Cover replay, conflicting content or obligation, invalid payload and process failure. |
 | T3 contract | After T2 and relevant Tool/Owner acceptance, approve event/retry identity, artifact binding and response recovery. Validate codec parity and sanitized fixtures. |
-| T3 regression | In the isolated Scheme C profile verify Create/Modify/Release through normal startup, expected Location and resource lifecycle, exact correlation, N1/N2 bytes, receipt/commit proof, UNKNOWN/reconcile, and no duplicate effect or delivery. Compare against the accepted baseline before removing legacy wiring. |
+| T3 regression | In the isolated Scheme C profile verify Create/Modify/Release through normal startup, Plugin-rendered Location and Owner-authoritative resource lifecycle, exact correlation, N1/N2 bytes, receipt/commit proof, UNKNOWN/reconcile, and no duplicate effect or delivery. Compare against the accepted baseline before removing legacy wiring. |
 
 T3 remains pending. The detailed Host integration evidence and acceptance tracking are maintained in the Host project.
