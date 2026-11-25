@@ -71,15 +71,57 @@ extensions:
       - type: nsmf.create-sm-context
         description: Normalized Nsmf CreateSMContext request.
         requestSchema: schemas/create-sm-context.request.schema.yaml
+        artifacts:
+          input:
+            - slot: n1.request
+              mediaType: application/vnd.3gpp.5gnas
+              required: true
+            - slot: n2.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
       - type: nsmf.update-sm-context
-        description: Normalized Nsmf UpdateSMContext request.
+        description: Normalized Nsmf UpdateSMContext request carrying Modify or UE-requested Release.
         requestSchema: schemas/update-sm-context.request.schema.yaml
+        artifacts:
+          input:
+            - slot: n1.request
+              mediaType: application/vnd.3gpp.5gnas
+              required: true
+      - type: nsmf.update-sm-context.continuation
+        description: Normalized continuation input for an existing UpdateSMContext Run.
+        requestSchema: schemas/update-sm-context.continuation.schema.yaml
+        artifacts:
+          input:
+            - slot: n1.confirmation
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.confirmation
+              mediaType: application/vnd.3gpp.ngap
+              required: false
 
   event.delivery:
     responses:
       - eventType: nsmf.create-sm-context
         responseSchema: schemas/sbi-response.schema.yaml
+        artifacts:
+          output:
+            - slot: n1.response
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.response
+              mediaType: application/vnd.3gpp.ngap
+              required: false
       - eventType: nsmf.update-sm-context
+        responseSchema: schemas/sbi-response.schema.yaml
+        artifacts:
+          output:
+            - slot: n1.response
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.response
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+      - eventType: nsmf.update-sm-context.continuation
         responseSchema: schemas/sbi-response.schema.yaml
 ~~~
 
