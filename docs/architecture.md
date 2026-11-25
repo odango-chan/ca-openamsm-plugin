@@ -1,46 +1,181 @@
-# OpenAMSM deployment adapter design
+# OpenAMSM Go Plugin — Deployment Adapter Design
 
-Status: proposed for review. This repository contains design documentation.
+Status: proposed for review. This repository currently contains design documentation only; no Plugin runtime or protocol migration is claimed.
 
-## Process and ownership
+## 1. Purpose
 
-The Host starts one long-lived Go executable using operator-configured argv and exchanges UTF-8 NDJSON over stdio using the Host Plugin v0 contract. The executable exposes its own HTTP/2 SBI listener. h2c is a profile choice for an isolated deployment. The process reserves stdout for IPC, serializes writes, logs sanitized diagnostics on stderr, bounds frames, queued work and request lifetimes, and drains within the Host shutdown deadline. No in-process Go dynamic loading is required.
+ca-openamsm-plugin is an independent Go process that adapts OpenAMSM deployment protocols to the generic CA Agent Host Plugin contract. It is not another Agent, Runtime, Tool Provider or Owner client.
 
-| Component | Authority |
+The first goal is deliberately narrow: move external Nsmf/Namf protocol ingress and response representation out of the Host while keeping Run lifecycle, execution, business authorization and Owner operations in their existing owners.
+
+## 2. Process and transport
+
+The Host starts one long-lived Go executable using operator-configured argv. The process exchanges UTF-8 NDJSON over stdin/stdout using ca-agent-host.plugin/v0.
+
+The Go process separately exposes the external HTTP/2 SBI listener. h2c is a deployment profile choice for an isolated lab. These are two different links:
+
+- Host ↔ Plugin: stdio NDJSON control/event/delivery protocol.
+- AMF / external SBI peer ↔ Plugin: HTTP/2 SBI protocol.
+
+The Go executable does not use Go's in-process plugin/.so loader. It is an ordinary standalone binary. stdout is reserved for IPC; diagnostics go to stderr. The process handles concurrent external requests and serializes IPC writes.
+
+## 3. Plugin-bundled Event Contract
+
+The Plugin package carries its own manifest and local request/response Schemas. The Host loads the manifest automatically when it loads the configured Plugin package and registers the declared event types. There is no separate Event Registry service or per-event Host handler.
+
+Illustrative manifest:
+
+    apiVersion: ca-agent-host.plugin/v0
+    plugin:
+      id: openamsm
+      version: 0.1.0
+    ingress:
+      - id: openamsm.nsmf
+        events:
+          - type: nsmf.sm-context.create.v1
+            description: Create an SM Context for a PDU Session.
+            requestSchema: schemas/create.request.json
+            responseSchema: schemas/create.response.json
+            artifacts:
+              - slot: n1
+                mediaType: application/vnd.3gpp.5gnas
+              - slot: n2
+                mediaType: application/vnd.3gpp.ngap
+          - type: nsmf.sm-context.update.v1
+            description: Update an existing SM Context.
+            requestSchema: schemas/update.request.json
+            responseSchema: schemas/update.response.json
+          - type: nsmf.sm-context.release.v1
+            description: Release an existing SM Context.
+            requestSchema: schemas/release.request.json
+            responseSchema: schemas/release.response.json
+    delivery:
+      - id: openamsm.sbi-response
+
+The Host supplies the event description, validated payload, request/response Schemas and relevant artifact references to its Generic LLM Agent. The Agent also discovers available Tools from the Host's registered Provider Interface Packages. The Plugin does not select a model, Tool, Skill or execution mode.
+
+The Generic LLM Agent is the default event consumer. A Host/operator deployment policy may select a CA-SL Skill for a specific event when deterministic execution is preferred. The Event Contract itself describes only event data and response shape; it does not prescribe the consumer.
+
+For this Demo, manifest import is automatic. No package approval, signature, PKI, sandbox or Plugin marketplace is required. Basic manifest and Schema validation remains for correctness.
+
+## 4. End-to-end responsibility
+
+    AMF / external SBI peer
+       │ HTTP/2 SBI
+       ▼
+    Go ca-openamsm-plugin
+       - SBI listener and protocol handling
+       - external peer authentication as required by the selected lab profile
+       - Nsmf parsing and multipart / Content-ID association
+       - NAS/N2 protocol decoding and Event normalization
+       - Plugin-bundled Event Contract
+       - SBI response encoding and delivery
+       │ stdio NDJSON: ca-agent-host.plugin/v0
+       ▼
+    Generic CA Agent Host
+       - automatic Event Contract import and payload validation
+       - event identity, RunStore and response obligations
+       - default Generic LLM Agent consumption
+       - optional Host-selected CA-SL Skill
+       - Host Tool/Provider boundary and authorization
+       - response Schema and business outcome validation
+       - HostArtifactStore and delivery records
+       ▼
+    Existing ca-client-tools Provider
+       - published Tool Interface Package
+       - Tool implementation and private backend mapping
+       - Owner calls, Receipt / Commit Proof / Reconcile
+       ▼
+    OpenAMSM Owner / SMF
+       - authoritative SM Context identity, existence and lifecycle
+
+The Plugin converts external protocol messages into events and structured protocol responses. It does not decide how the Agent performs the work.
+
+## 5. Generic Agent and optional Skill path
+
+The default path is:
+
+    SBI request
+      → Plugin normalized event
+      → Host auto-imports Event Contract and validates payload
+      → Generic LLM Agent receives description, payload, Schemas and available Tools
+      → Agent dynamically requests Tool calls through Host
+      → Host authorizes and invokes the existing Provider
+      → Agent produces a structured response
+      → Host validates response Schema and business evidence
+      → Plugin encodes the SBI response
+
+No OpenAMSM-specific LLM handler or pre-authored Skill is required for this default path.
+
+For an event configured to use a deterministic Skill, the Host selects that Skill and invokes the existing Admission/READY/CA-SL Runtime path. The Plugin and Event Contract do not choose the Skill. There remains one CA-SL Runtime and one Provider system.
+
+The Agent cannot connect directly to the OpenAMSM Owner or establish COMMITTED by generating text. For mutations, the existing Provider/Owner Receipt and Commit Proof semantics remain authoritative; UNKNOWN must remain UNKNOWN.
+
+## 6. Event identity and response obligation
+
+Event identity is the identity of one logical business event. It must be derived from a stable protocol retry identifier or a documented immutable request identity, not an HTTP/2 stream ID or IPC frame ID.
+
+The Host compares the event identity and semantic content digest separately from the response obligation:
+
+- Same event identity and same semantic digest: reuse the original Run.
+- Same event identity and same semantic digest but a new HTTP/2 stream: attach a new response obligation to that same Run and deliver the same stored/current result to the new waiter.
+- Same event identity with different semantic content: conflict; do not execute again or replace the original event.
+
+The Plugin maintains the current protocol waiter mapping. A Plugin restart may lose a live HTTP/2 stream; a protocol retry creates a new obligation and reuses the Host Run result. The Host persists event identity, content digest, Run association and obligations in the existing RunStore. No Plugin database is introduced.
+
+Runtime continuation wakeups and external protocol delivery are distinct Run records. The Host records the structured result and delivery ID before dispatch. The Demo uses one delivery attempt per obligation; an ambiguous result is UNKNOWN. A delivery result never changes the Owner business outcome.
+
+The precise stable retry identity and waiter recovery rules must be verified for Create, Modify and Release during T3. Where the protocol has no trustworthy retry identity, document and test the selected derivation before migration.
+
+## 7. T3 Host-managed N1/N2 artifact handoff
+
+N1 NAS, N2 NGAP and multipart binary parts must not be Base64-embedded in Event JSON or stored in a Plugin-owned database.
+
+The Plugin declares typed artifact slots and associates the received raw bytes with protocol Content-ID. The Host owns the handoff and custody:
+
+1. Plugin transfers the raw bytes through a Host-managed local handoff.
+2. Host verifies the actual bytes, length and digest.
+3. Host stores immutable content in the existing HostArtifactStore.
+4. Host attaches the artifact reference to the accepted Run in RunStore before ACK or execution.
+5. Host resolves inbound artifacts only for the authorized Provider/Runtime operation.
+6. Host exposes exact outbound artifacts only to the original Plugin delivery binding for that Run/obligation.
+7. Plugin encodes the authorized bytes into the SBI response.
+
+The exact local byte-transfer mechanism is a T3 implementation decision. The ownership is not: HostArtifactStore and RunStore remain authoritative. T2 is JSON-only and does not implement binary handoff.
+
+## 8. Codec reuse
+
+Reuse the shared Go NAS / N2 / NGAP codec package from ca-client-tools when its public API and required message coverage are available. Do not copy codec implementations or launch a second codec worker from this Plugin.
+
+Keep protocol codec, SBI multipart parsing, Event mapping and response formatting as separate responsibilities. Compare codec behavior against sanitized cross-language golden vectors and malformed-input cases. Claim only the exact tested message/IE subset; do not infer full NGAP parity from a narrower NAS/N2 result.
+
+## 9. Migration boundary
+
+| Existing ca-agent-demo responsibility | Destination |
 | --- | --- |
-| Go Plugin | Transport and AMF peer authentication, Nsmf wire parsing, multipart/Content-ID association, protocol-level NAS/N2 decode, normalized event Schema and mapping, SBI resource representation and alias resolution where needed, response encoding and delivery. |
-| Host | Operator configuration, event Schema validation, Root routing and projection, Admission/READY, durable Run identity and replay, scoped opaque Run-to-resource correlation, private artifact custody, delivery records and optional built-in orchestration. |
-| CA-SL Runtime | Executes the admitted Procedure once per accepted invocation path and enforces Root-scoped Capability/Operation authorization and Effect semantics. |
-| Tool Provider and Owner | The published Interface Package defines public tools, Schemas, Capabilities and Effects. The Provider performs bound Owner calls via its own connection. The Owner/SMF is authoritative for SM Context identity, existence and Create/Modify/Release transitions. The Host/Runtime verifies evidence and preserves UNKNOWN, using exact-original reconcile where authorized. |
+| Nsmf HTTP/2 listener, HTTP wire parsing, multipart/Content-ID, protocol decoding and response encoding | Go Plugin |
+| External protocol normalization and Event Contract | Go Plugin |
+| NAS/NGAP/N2 codec adapter | Go Plugin using shared Go codec |
+| Run identity, event replay, response obligations and waiter-to-Run association | Generic Host / RunStore |
+| Nsmf Create/Modify/Release Run lifecycle and NsmfRunExecutor | Generic Host / Resident |
+| Resource map, Host Location/Run correlation, Owner claims and release confirmation | Generic Host / Resident |
+| HostArtifactStore and private artifact access | Generic Host |
+| MAS Callable, ToolCatalog, Owner client, Receipt, Commit Proof and Reconcile | Existing ca-client-tools Provider + Host/Runtime |
+| Skill Procedure and business Goal | ca-skills |
+| Single CA-SL Procedure executor | CA-SL Runtime |
 
-A protocol ACK or successful SBI delivery cannot establish a committed mutation. The Plugin receives the authorized response data needed to render the wire reply. The Generic Host may persist a scoped opaque resource reference for Run correlation and authorized private material access. The OpenAMSM Plugin owns SBI representation, including public `Location`, alias resolution where needed, and protocol status mapping. The OpenAMSM Owner/SMF owns authoritative SM Context identity, existence and Create/Modify/Release transitions. Plugin mappings and Host correlation records carry no authority over business state.
+Do not move NsmfRunExecutor, Resident lifecycle, RunStore, HostArtifactStore, resource mapping, Owner claims, MAS Callable mapping, ToolCatalog, Owner client, Receipt/Commit/Reconcile or CA-SL Runtime into this repository.
 
-An identical Release replay resolves to its original Run without another dispatch. A distinct request for a released context follows the authorized Owner path. The Plugin maps the Owner's result to the SBI response, preserving ambiguity when the business outcome is UNKNOWN.
+Do not move the entire integrations/fivegc directory. nsmf_http.py and nsmf_runtime.py contain mixed protocol and Host composition responsibilities and must be split by ownership. The Plugin is not a second Provider and must not become a direct Owner client.
 
-## Stable event identity and response obligation
-
-A logical event has a stable adapter event ID under the configured Plugin, ingress and authenticated source. Derive it from the profile's trustworthy retry identifier or documented immutable request identity. IPC frame IDs, connections and transient waiters are excluded. The Host compares canonical semantic content, including typed artifact slot/digest/length when applicable. An identical replay reuses the original Run. Reuse of a key with different semantic content is a conflict.
-
-The response obligation is separately recorded against the original Run and same-Plugin delivery extension. The Plugin may retain or reattach a local waiter only for the same authenticated logical request and same opaque obligation. A changed or absent obligation on a response-bearing replay cannot replace the original or trigger another delivery. The precise Nsmf identity and waiter recovery mapping must be proven for Create, Modify and Release. The Demo records one attempt. Ambiguous delivery is UNKNOWN, independently of business outcome.
-
-## T3 Host-managed artifact handoff
-
-Before acknowledging a new event or executing it, the Host must acquire custody of required raw N1/N2 as immutable bytes, verify bounds and integrity itself, and durably bind typed references to the authenticated ingress and accepted Run. The Plugin supplies only normalized business data to the event. Host-private references and bytes are excluded from ordinary Skill input, LLM context and diagnostics. Authorized private Runtime/Provider material is resolved from the Run and operation scope. For outbound binary content the Host grants the original delivery binding access only to the exact response artifacts for that Run. The Plugin encodes the response without choosing or modifying business outputs.
-
-T3 requires a separately reviewed transfer binding. Candidate reuse is the Host's artifact storage and Run ledger, with durable staging followed by Run attachment, cleanup of abandoned data, and access tied to the bound Run and delivery attempt. Payload transport, authorization of staging and retrieval, limits, retention and expiry still require selection. T2 uses only the baseline JSON contract.
-
-## Codec reuse and migration
-
-Evaluate maintained Go NAS and NGAP/N2 codecs for the chosen 3GPP profile, pinned versions, compatible licenses, relevant message/IE coverage and malformed-input handling. Keep codec adapters pure where possible and compare behavior against sanitized cross-language golden vectors. Keep SBI multipart handling, event projection and response formatting outside reusable codecs. A protocol decode mapping does not replace an already-authorized Provider READ used by a Procedure. The first extraction covers the listener, wire parsing, normalization, serialization and any required SBI alias mapping. Treat existing Host-side Nsmf lifecycle behavior as regression evidence while moving lifecycle authority to the Owner boundary. Retain the existing Provider execution path.
-
-## Acceptance sequence
+## 10. Acceptance sequence
 
 | Stage | Required evidence |
 | --- | --- |
-| Design | Review the responsibilities, event replay rules and artifact custody and identify unresolved T3 contract choices. |
-| T1 | Host Tool cutover acceptance, including independent Provider/Skill proof, is tracked by the Host project. |
-| T2 | An independent non-5GC adapter exercises the built Host wheel, normal Admission/READY, existing Runtime/Provider and paired delivery using deployment configuration only. Cover replay, conflicting content or obligation, invalid payload and process failure. |
-| T3 contract | After T2 and relevant Tool/Owner acceptance, approve event/retry identity, artifact binding and response recovery. Validate codec parity and sanitized fixtures. |
-| T3 regression | In the isolated Scheme C profile verify Create/Modify/Release through normal startup, Plugin-rendered Location and Owner-authoritative resource lifecycle, exact correlation, N1/N2 bytes, receipt/commit proof, UNKNOWN/reconcile, and no duplicate effect or delivery. Compare against the accepted baseline before removing legacy wiring. |
+| Design | Align this repository with Host Plugin Contract v0, automatic Event Contract import, Generic Agent default and optional Skill override |
+| T1 | Host Tool P0 #241 accepted; no Provider work duplicated here |
+| T2 | Non-5GC Go Plugin → automatic manifest import → Generic LLM Agent → dynamic existing Provider Tool call → structured response → Plugin delivery |
+| T3 contract | After T2 and relevant Host/Provider gates, freeze Nsmf retry identity, waiter mapping and Host-managed artifact transfer |
+| T3 regression | Isolated Scheme C Create/Modify/Release through normal Host startup, Agent/optional Skill, Provider and Owner; verify N1/N2 bytes, Location, receipts, UNKNOWN/reconcile and no duplicate mutation before legacy Listener removal |
 
-T3 remains pending. The detailed Host integration evidence and acceptance tracking are maintained in the Host project.
+Current status: design only. T1 remains with #241. PR #246 synthetic Owner G5 reports 22 passed; real isolated Scheme C G6 remains NOT_RUN / BLOCKED and G7 remains partial. T2 and T3 are NOT_STARTED. No Production Qualification is claimed.
