@@ -1,17 +1,13 @@
 # CA OpenAMSM Plugin
 
-Independent Go deployment adapter for OpenAMSM external protocol ingress and delivery.
+Independent Go Event Plugin for OpenAMSM SBI protocol ingress and response delivery.
 
-The Plugin is a long-lived standalone process. It communicates with CA Agent Host through stdio NDJSON and exposes the external HTTP/2 SBI listener. Its package carries the Event Contract manifest and request/response Schemas, which the Host automatically imports.
+**Normative Host contract:** [ca-agent-next PR #1](https://github.com/odango-chan/ca-agent-next/pull/1). This repository follows its [Plugin Package/IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/plugin-package.md) and [Host Artifact Handoff](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/plugin-artifact-handoff.md). It does not define a separate Plugin API.
 
-The Generic LLM Agent is the default event consumer. A Host deployment policy may select an existing CA-SL Skill for deterministic execution. The Plugin does not implement an Agent, Skill Runtime, Tool Provider, Owner client or business authorization mechanism.
+The Plugin handles external SBI protocol parsing, normalization and response encoding. Every fresh business Event must bind a Skill in the Host before execution. The Plugin does not select a Skill, execute business logic, call the Owner or implement Tools.
 
-[Proposed architecture and acceptance plan](docs/architecture.md)
+OpenAMSM Owner operations remain in [ca-client-tools](https://github.com/odango-chan/ca-client-tools), consumed through the single Plugin Manager tools extension adapter. Existing Establish, Modify and UE-requested Release Skills remain in [ca-skills](https://github.com/odango-chan/ca-skills).
 
-Related design:
-- [CA Agent Host Plugin Contract v0](https://github.com/odango-chan/ca-agent-demo/blob/docs/plugin-architecture-freeze-20261124/docs/design/plugin-contract.md)
-- [CA Agent Host Plugin Acceptance](https://github.com/odango-chan/ca-agent-demo/blob/docs/plugin-architecture-freeze-20261124/docs/design/plugin-acceptance.md)
-- [Host Plugin design PR #249](https://github.com/odango-chan/ca-agent-demo/pull/249)
-- [Plugin implementation tracking #235](https://github.com/odango-chan/ca-agent-demo/issues/235)
+[Architecture and migration boundary](docs/architecture.md) · [Acceptance gates](docs/acceptance.md)
 
-Status: design review only. No Go runtime, SBI listener migration, binary artifact handoff or T2/T3 acceptance is implemented or claimed.
+**Status:** design-only. No Go runtime, SBI listener migration, Host Artifact Handoff implementation or Create/Modify/Release E2E is claimed. The design PR remains OPEN/DRAFT and depends on the Next contract being frozen.
