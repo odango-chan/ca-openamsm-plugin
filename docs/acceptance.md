@@ -23,6 +23,7 @@
 | OAP-13 | Zero Core coupling | Adding this Plugin, its Event Schemas, Skills and Tool package requires no OpenAMSM-specific code in Agent Core, Skill Resolver, Runtime or Plugin Manager. |
 | OAP-14 | On-demand Codec | A Skill that does not need protocol fields passes the original artifactRef to the business Tool without invoking Codec. A Skill that needs fields invokes the Codec Tool through the same Runtime Action Boundary. Decode returns structured JSON and never replaces or mutates the original N1/N2 artifact. |
 | OAP-15 | Schema ownership | SBI request/response and multipart slots follow the applicable 3GPP OpenAPI. NAS/NGAP structures follow the relevant 3GPP definitions. Tool Interface Package defines Codec IO; Skill requestSchema defines only business input and does not duplicate the full protocol Schema. |
+| OAP-16 | Minimal routing classifier | The shared Codec implementation classifies the exact NAS message discriminator needed to distinguish UpdateSMContext Modify (0xC9) from UE-requested Release (0xD1). The Event Plugin uses only this minimal classifier; unsupported, malformed or ambiguous messages fail explicitly rather than selecting a Skill by guesswork. No duplicate parser is added. |
 
 ## 2. Required protocol and artifact fixtures
 
@@ -36,6 +37,7 @@
 - Inbound/outbound Artifact path traversal, symlink, missing file and byte-length mismatch rejection.
 - Delivery failed/unknown without changing Owner business outcome.
 - Codec negative cases for callable but unqualified NAS/N2/NGAP inputs.
+- UpdateSMContext routing fixtures for NAS 0xC9 versus 0xD1, plus malformed/unknown/unsupported discriminator cases.
 - A no-decode Skill path proving no Codec Tool invocation occurs.
 - A decode-required Skill path proving the Codec Tool is invoked through the normal Runtime Action Boundary and the original artifact remains available.
 
