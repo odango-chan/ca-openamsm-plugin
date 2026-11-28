@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:connectionagent:plugin:openamsm:event:nsmf.update-sm-context",
+  "title": "nsmf.update-sm-context payload",
+  "description": "Normalized F06 §4.1 payload for UpdateSmContext carrying a new Modify (0xC9) or UE-requested Release (0xD1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operationId", "smContextRef", "request", "discriminator"],
+  "properties": {
+    "operationId": { "const": "UpdateSmContext" },
+    "smContextRef": { "type": "string", "minLength": 1 },
+    "request": {
+      "type": "object",
+      "description": "Verbatim SmContextUpdateData JSON object from the fixed TS 29.502 V19.5.0 OpenAPI source.",
+      "additionalProperties": true
+    },
+    "discriminator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n1MessageType"],
+      "properties": {
+        "n1MessageType": { "enum": ["0xC9", "0xD1"] }
+      }
+    }
+  }
+}

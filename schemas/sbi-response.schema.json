@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:connectionagent:plugin:openamsm:event:sbi-response",
+  "title": "Host-supplied SBI response body",
+  "description": "The Host supplies the SBI response body. The Plugin serializes it without changing fields and does not invent a Location URI or business payload. A multipart/related response requires an object body; body may be null only when no binary part is delivered.",
+  "type": ["object", "null"]
+}

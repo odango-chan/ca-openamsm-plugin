@@ -1,0 +1,79 @@
+apiVersion: connectionagent.io/plugin-package/v1alpha1
+kind: Plugin
+
+metadata:
+  id: urn:connectionagent:plugin:openamsm
+  version: 0.1.0
+
+process:
+  executable: bin/ca-openamsm-plugin
+  args: [serve]
+  protocol: connectionagent.io/plugin-ipc/v1alpha1
+
+extensions:
+  event.ingress:
+    events:
+      - type: nsmf.create-sm-context
+        description: Normalized Nsmf PostSmContexts ingress (original SmContextCreateData).
+        requestSchema: schemas/create-sm-context.request.schema.json
+        artifacts:
+          input:
+            - slot: n1.request
+              mediaType: application/vnd.3gpp.5gnas
+              required: true
+            - slot: n2.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+            - slot: n2Ext1.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+      - type: nsmf.update-sm-context
+        description: Normalized Nsmf UpdateSmContext ingress carrying Modify (0xC9) or UE-requested Release (0xD1).
+        requestSchema: schemas/update-sm-context.request.schema.json
+        artifacts:
+          input:
+            - slot: n1.request
+              mediaType: application/vnd.3gpp.5gnas
+              required: true
+            - slot: n2.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+            - slot: n2Ext1.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+      - type: nsmf.update-sm-context.continuation
+        description: Normalized continuation for an existing UpdateSmContext Run (N1 0xD4 and/or an N2 completion response).
+        requestSchema: schemas/update-sm-context.continuation.schema.json
+        artifacts:
+          input:
+            - slot: n1.confirmation
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.confirmation
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+
+  event.delivery:
+    responses:
+      - eventType: nsmf.create-sm-context
+        responseSchema: schemas/sbi-response.schema.json
+        artifacts:
+          output:
+            - slot: n1.response
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.response
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+      - eventType: nsmf.update-sm-context
+        responseSchema: schemas/sbi-response.schema.json
+        artifacts:
+          output:
+            - slot: n1.response
+              mediaType: application/vnd.3gpp.5gnas
+              required: false
+            - slot: n2.response
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+      - eventType: nsmf.update-sm-context.continuation
+        responseSchema: schemas/sbi-response.schema.json
