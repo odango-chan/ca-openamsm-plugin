@@ -519,7 +519,7 @@ func TestAC00905CancelLiveIngress(t *testing.T) {
 	host.shutdown()
 }
 
-func TestAC00902PathTraversalOutboundDispatchFails(t *testing.T) {
+func TestAC00903PathTraversalOutboundDispatchFails(t *testing.T) {
 	host := startTestHost(t)
 	frame, ingress, outcome := host.startCreate(t, testsupport.N1Modify, testsupport.N2SetupResponse, nil, testsupport.CreateJSON())
 	host.ack(frame, "accepted")
