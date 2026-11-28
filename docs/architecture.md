@@ -2,13 +2,13 @@
 
 **Status:** design-only proposal aligned to ca-agent-next. No Go runtime, SBI listener migration, Artifact Handoff implementation or E2E acceptance is claimed.
 
-**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115; not yet merged to `main`), snapshot `39e0bb018e8cd1cc282da3853636c5666dd9a86b`.
-- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
-- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
+**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115; not yet merged to `main`), snapshot `f8de225054895f53b30f73aa721bd1ca9290813e`.
+- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
+- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
 
-The Plugin Package / IPC v1alpha1 contract is already merged in Next. PR #115 carries the current central design integration candidate and remains Draft.
+The Plugin Package / IPC v1alpha1 contract is already merged in Next. PR #115 carries the central design integration candidate and remains Draft. The SHA above is an **immutable snapshot** for comparison, not a self-updating current Head or a main merge claim; its F05 v0.4.13 / F06 v0.3.9 / SR-009 v0.2.15 / IPC v0.2.8 revisions remain design / review scoped. Re-read the current PR #115 Head and preserve per-AC NOT_RUN / BLOCKED boundaries before implementation or Ready.
 
 This repository does not define another Plugin API, IPC version, Skill selector, Artifact service or Tool contract.
 
@@ -81,6 +81,9 @@ extensions:
             - slot: n2.request
               mediaType: application/vnd.3gpp.ngap
               required: false
+            - slot: n2Ext1.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
       - type: nsmf.update-sm-context
         description: Normalized Nsmf UpdateSMContext request carrying Modify or UE-requested Release.
         requestSchema: schemas/update-sm-context.request.schema.yaml
@@ -89,6 +92,12 @@ extensions:
             - slot: n1.request
               mediaType: application/vnd.3gpp.5gnas
               required: true
+            - slot: n2.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
+            - slot: n2Ext1.request
+              mediaType: application/vnd.3gpp.ngap
+              required: false
       - type: nsmf.update-sm-context.continuation
         description: Normalized continuation input for an existing UpdateSMContext Run.
         requestSchema: schemas/update-sm-context.continuation.schema.yaml
@@ -127,7 +136,7 @@ extensions:
         responseSchema: schemas/sbi-response.schema.yaml
 ~~~
 
-The Event names above are normalized internal Event types. Their exact mapping to OpenAMSM OpenAPI operationIds and request fields is a required pre-implementation check. The Plugin does not add a Skill ID, Goal, business Contract Package, execution mode or authorization grant to the manifest.
+The Event names above are normalized internal Event types. **Next F06 v0.3.9 §4.1 already fixes their operationId, request root, discriminator and Content-ID/slot mappings**; implementation must use those rules and test their compatibility against the pinned original TS 29.502 OpenAPI without reopening or guessing the mapping. The manifest is illustrative: the `required` attribute must not elevate an OAS3-optional part to universally required; a stricter Demo ingress profile must be explicit and independently justified. The Plugin does not add a Skill ID, Goal, business Contract Package, execution mode or authorization grant.
 
 If the deployment includes AMF/network-initiated ReleaseSMContext, it is a distinct protocol event and must not be conflated with the UE-requested PDU Session Release Skill. Add its normalized event only when that scope is explicitly included.
 
@@ -198,7 +207,8 @@ Use the shared slot vocabulary defined by Next:
 | Slot | Direction | Meaning |
 |---|---|---|
 | n1.request | Inbound | Original 5GSM NAS request |
-| n2.request | Inbound | N2 SM information when the actual SBI request contains it |
+| n2.request | Inbound | N2 SM information when the Create/Update JSON actually references it |
+| n2Ext1.request | Inbound | Create/Update `n2SmInfoExt1.contentId` reference to the original N2 Ext1 part, independent of `n2.request` |
 | n1.confirmation | Inbound | N1 continuation, including PDU Session Release Complete (0xD4), when delivered as a later ingress |
 | n2.confirmation | Inbound | N2 continuation, including PDU Session Resource Release Response, when delivered as a later ingress |
 | n1.response | Outbound | Owner/Host-produced N1 response for the recorded obligation |
@@ -206,9 +216,9 @@ Use the shared slot vocabulary defined by Next:
 
 NAS media type: application/vnd.3gpp.5gnas. NGAP/N2 media type: application/vnd.3gpp.ngap.
 
-Establish initially carries the original n1.request; n2.request is declared only if the actual CreateSMContext request contains that part. Modify carries the original PDU Session Modification Request (0xC9). UE-requested Release carries the original PDU Session Release Request (0xD1). Release continuation may carry N1 Release Complete (0xD4) and N2 PDU Session Resource Release Response; Host must correlate both to the exact original Run, SUPI, PSI and session generation.
+Establish uses the original N1 bytes when present under its published OAS3/Demo ingress profile; optional `n2.request` and `n2Ext1.request` are staged **only when the Create/Update request JSON references their Content-ID**. Update Modify carries 0xC9; UE-requested Release carries 0xD1. Release continuation may carry N1 Release Complete 0xD4 and N2 PDU Session Resource Release Response; Host correlates both to the original Run/SUPI/PSI/generation. **No `n2Ext1.confirmation` slot has been frozen**: any continuation with N2 Ext1 is explicitly rejected in this profile and its operational sub-acceptance remains NOT_RUN; never drop/rename the bytes silently.
 
-The exact SBI operationIds, multipart part names, required/optional slots and response mappings must be checked against current OpenAMSM OpenAPI and the existing ca-agent-demo Host ingress before implementation. Do not guess missing mappings.
+Implement exactly the operationId/request/Content-ID/slot mappings already specified in Next F06 §4.1, validated by test fixtures from the fixed original TS 29.502 source. Unknown, duplicate, missing, mismatched media type or extra unreferenced parts must fail closed according to the published ingress profile; do not replace the frozen event contract with a separate Plugin-only mapping or modify the upstream 3GPP YAML.
 
 ## 6. Tool Provider and Owner boundary
 
@@ -291,4 +301,4 @@ No Production Qualification is claimed.
 
 The new Plugin is the second independent business used to prove zero Core business coupling. Do not require a separate third Echo-like business after OpenAMSM.
 
-The new Plugin is the second independent business used to prove zero Core business coupling. Do not require a separate third Echo-like business after OpenAMSM.
+**2026-11-28 review correction (ca-agent-next #116 P2-01/P2-07/P2-08):** this is the design-only source PR. Existing stacked implementation PR #3 has separate module test-Host evidence and is not merged; module acceptance does not wait for SR-011 system E2E or SR-026 T2 Codec publication. Fixed central permalink is a historical design snapshot; the latest PR #115 must be checked again before integration.
