@@ -1,7 +1,7 @@
 # OpenAMSM Plugin acceptance
 
 **Status:** design-only; implementation NOT_STARTED; acceptance NOT_RUN.
-**Normative contract:** ca-agent-next Plugin Package v1alpha1 / Plugin IPC v1alpha1 and the current F05 staging rules, pinned in [Next PR #115 integration snapshot](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md). This repository owns no independent IPC or Artifact protocol.
+**Normative contract:** ca-agent-next Plugin Package v1alpha1 / Plugin IPC v1alpha1 and the current F05 staging rules, pinned in [Next PR #115 integration snapshot](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md). This repository owns no independent IPC or Artifact protocol.
 **Scope:** Demo-level protocol adapter; no Production Qualification claim.
 
 ## 1. Required gates
