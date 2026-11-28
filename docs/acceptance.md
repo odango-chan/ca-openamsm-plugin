@@ -32,7 +32,7 @@
 - UpdateSMContext or the verified operation carrying UE-requested PDU Session Release Request (0xD1).
 - Release continuation with PDU Session Release Complete (0xD4) and N2 PDU Session Resource Release Response.
 - Multipart Content-ID present/absent cases according to the actual OpenAMSM OpenAPI.
-- Per-stream `responseChannelId` mapping under concurrent HTTP/2 requests; unknown/closed channel and wrong `deliveryId` negative cases.
+- Per-stream `responseChannelId` mapping under concurrent HTTP/2 requests; unknown/closed channel, wrong `deliveryId` / `correlationId`, and one correlated result per dispatch.
 - Demo peer retry fixtures using `X-CA-Request-Id` may be used for Host integration only; same ID/different content conflict and new response-obligation attachment are Host-owned, not Plugin deduplication tests.
 - Inbound/outbound Artifact path traversal, symlink, missing file and byte-length mismatch rejection.
 - Delivery failed/unknown without changing Owner business outcome.
