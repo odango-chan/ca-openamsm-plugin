@@ -2,11 +2,13 @@
 
 **Status:** design-only proposal aligned to ca-agent-next. No Go runtime, SBI listener migration, Artifact Handoff implementation or E2E acceptance is claimed.
 
-**Normative Host contract:** [ca-agent-next PR #1](https://github.com/odango-chan/ca-agent-next/pull/1), specifically:
-- [Plugin Package v1alpha1 and common IPC](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/plugin-package.md)
-- [Host-owned Plugin Artifact Handoff](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/plugin-artifact-handoff.md)
-- [Skill-first architecture](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/architecture.md)
-- [OpenAMSM acceptance gates](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/acceptance.md)
+**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115; not yet merged to `main`), snapshot `f094e1095b1c14cfe230ff5715dbeeb1009a87c5`.
+- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
+- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
+
+The Plugin Package / IPC v1alpha1 contract is already merged in Next. PR #115 carries the current central design integration candidate and remains Draft.
 
 This repository does not define another Plugin API, IPC version, Skill selector, Artifact service or Tool contract.
 
@@ -134,32 +136,27 @@ If the deployment includes AMF/network-initiated ReleaseSMContext, it is a disti
 Every fresh business Event must bind a Skill before execution. There is no unbound Generic LLM Agent fallback.
 
 The Plugin publishes only:
-- declared normalized eventType;
-- validated normalized payload;
-- protocol source and stable external request identity;
-- Host Artifact references after ingress acceptance.
+- declared normalized `eventType`;
+- the validated normalized payload defined by F06 §4.1;
+- protocol source and optional `externalRequestId` only when the trusted peer supplies a stable request identity;
+- raw Artifact staging descriptors. Host `artifactRef` values remain Host-internal and are never sent to this Plugin.
 
-It does not select or name a Skill. It also does not eagerly decode N1/N2 for business reasoning. It may extract only the minimum NAS message discriminator needed to normalize a shared SBI operation such as UpdateSMContext (Modify versus UE-requested Release). This is protocol-to-Event classification, not Skill selection or full business decoding. The Host Resolver still selects the Skill. Deeper protocol fields remain available through on-demand Codec Tools.
+It does not select or name a Skill. It does not decode N1/N2 for business reasoning. For shared `UpdateSmContext`, it consumes only the narrow T0 5GSM discriminator API published by `ca-client-tools` to normalize `0xC9` / `0xD1` / `0xD4`; it must not implement or copy a NAS parser, invoke full `DecodeNAS` as a shortcut, or expose business IE fields before Skill selection. Until the exact shared API and version are published, the Plugin must fail closed for production UpdateSMContext classification; a test double may test Event mapping only. The Host Resolver selects the Skill. Deeper protocol fields remain available through on-demand Codec Tools.
 
 ### 3.1 On-demand protocol decoding
 
-- If a Skill does not need inner NAS/NGAP fields, it passes the original artifactRef to the relevant business Tool. No Codec Tool is invoked.
-- If a Skill needs protocol fields, it calls the corresponding Codec Tool exported by the `ca-client-tools` Tool Plugin through the common Runtime Action Boundary.
+- If a Skill does not need inner NAS/NGAP fields, it passes the original Host-authorized `artifactRef` to the relevant business Tool. No Codec Tool is invoked.
+- If a Skill needs protocol fields, it calls the corresponding Codec Tool exported by the `ca-client-tools` Tool Plugin through the common Runtime Action Boundary, after Skill/Run binding.
 - The Codec Tool returns a structured JSON projection. The original N1/N2 artifact remains unchanged and available for forwarding or response composition.
-- Encode, when needed, is also a Tool operation and returns an output artifact reference for Host-controlled delivery.
+- Encode, when needed, is also a Tool operation and returns an output artifact for Host-controlled delivery.
 - Codec operations must be published in the canonical Tool Interface Package and limited to the exact message subset that has been implemented and tested.
 
-The Host Skill Resolver applies the CA-SL v1alpha5 rules:
+The Host Skill Resolver and CA-SL authoring contract are CA-SL **1.6.0 only**. This Plugin does not implement or duplicate selection semantics:
 
-1. Exact continuation is resolved first and resumes the original Run without fresh Skill selection.
-2. Evaluate optional assurance/contract.yaml.when for imported Assurance Skills against normalized event.type and input.
-3. One true match selects directly.
-4. Multiple true matches may be disambiguated by the LLM only within that exact candidate set.
-5. With zero true matches, semantic selection may use only Skills without when, using cached SKILL.md content/metadata.
-6. If no candidate remains, ask for clarification or reject. Do not fall back to a generic Agent with no Skill.
-7. Select Deterministic or LLM-guided mode only after exact Skill binding.
-
-No Assurance means LLM-guided only. Valid Assurance supports Deterministic and LLM-guided modes. Invalid present Assurance is an import failure, never a silent downgrade. Both modes use the same Runtime Action Boundary.
+- `when` is declared only in `assurance/contract.yaml`; it is not a `SKILL.md` front-matter field.
+- The Host Resolver owns continuation lookup, deterministic `when` evaluation, candidate selection and Skill binding.
+- No v1alpha5 compatibility, aliases, fallback parser, mixed-version negotiation or automatic migration is supported.
+- Execution mode is chosen only after exact Skill binding. No Assurance means LLM-guided execution; valid Assurance supports Deterministic and LLM-guided execution through the same Runtime Action Boundary; invalid present Assurance is an import failure, not a silent downgrade.
 
 The existing ca-skills packages are the business source:
 
@@ -167,41 +164,32 @@ The existing ca-skills packages are the business source:
 - modify-pdu-session-mas;
 - release-pdu-session-mas.
 
-Create, Modify and UE-requested Release must be distinguished by normalized Event metadata and validated request fields. Modify and UE-requested Release may share an Nsmf UpdateSMContext ingress; the Resolver, not the Plugin, chooses the Skill. The exact discriminator field and mapping to OpenAMSM OpenAPI must be frozen with schema tests. Do not infer the Skill from an HTTP path alone or duplicate business selection logic in Go.
+Create, Modify and UE-requested Release must be distinguished by the normalized Event metadata and validated request fields defined in F06 §4.1. Modify and UE-requested Release may share an Nsmf UpdateSMContext ingress; the Resolver, not the Plugin, chooses the Skill. Do not infer the Skill from an HTTP path alone or duplicate business selection logic in Go.
 
 ## 4. Event identity, Run and response obligations
 
-The Plugin distinguishes logical request identity from the current HTTP/2 response stream:
+The Plugin distinguishes optional logical request identity from the current HTTP/2 response stream:
 
-- externalRequestId is the stable protocol request/retry identity, or a documented and tested canonical identity derived from immutable protocol fields.
-- responseChannelId is a Plugin-local handle for the current HTTP/2 stream.
-- eventId identifies the normalized Event instance.
-- Run ID and responseObligationId are assigned by Host and returned in ingress.ack.
+- `externalRequestId` is optional. In the controlled Demo peer it is populated only from the configured private `X-CA-Request-Id` header; it is not a 3GPP OpenAPI field. If a real peer supplies no stable identity, omit it. Do not synthesize a canonical ID from `smContextRef`, Content-ID, principal, HTTP/2 stream ID or IPC `messageId`.
+- `responseChannelId` is a Plugin-local handle for the current HTTP/2 stream.
+- `eventId` identifies the normalized Event instance.
+- Host owns Run ID, deduplication, continuation association and `responseObligationId`. `ingress.ack` returns only `eventId`, disposition and safe diagnostics; it never returns Run ID, `responseObligationId` or Host `artifactRef`.
 
-Never use HTTP/2 stream ID or IPC messageId as the logical business request identity.
+Never use HTTP/2 stream ID or IPC `messageId` as logical business request identity.
 
-A retry with the same stable externalRequestId and identical normalized payload/artifacts attaches a new response obligation to the original Run. Reuse with different normalized content or artifact bytes is a conflict. The Host owns deduplication and Run association; Plugin retains only the live protocol waiter needed to write the response.
+For an identical retry with a trusted stable `externalRequestId`, the Host may attach a new response obligation to the original Run. Reuse with different normalized content or artifact bytes is a Host-side conflict. The Plugin does not deduplicate or associate Runs; it retains only the live stream waiter required to write the current response. `responseObligationId` is received only transiently in `delivery.dispatch` and is never persisted, forwarded or returned in `delivery.result`.
 
-If a stable retry identity cannot be established for an operation, that operation's replay-safe E2E gate remains NOT_RUN. Do not add an Event content digest or extra SHA-256 mechanism.
+If a stable retry identity cannot be established, cross-reconnect replay-safe E2E remains NOT_RUN/BLOCKED. Do not add an Event content digest or extra SHA-256 mechanism.
 
 A delivery result reports delivered, failed or unknown. An ambiguous delivery remains UNKNOWN and does not change the Owner's business outcome. Create 201 and Location are serialized from Host-supplied status/headers; Plugin does not invent the resource URI or infer business commitment.
 
 ## 5. Host-owned N1/N2 Artifact Handoff
 
-Binary data uses the exact [ca-agent-next Plugin Artifact Handoff v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/docs/architecture-baseline-20261125/docs/plugin-artifact-handoff.md).
+Binary data uses the exact ca-agent-next Plugin Package / IPC v1alpha1 and F05 staging contract.
 
-The Host creates inbound/outbound staging directories and passes them in host.initialize. The Plugin writes raw inbound N1/N2 parts under the supplied inbound root and sends relative stagingPath, slot, mediaType, Content-ID when present and byteLength in ingress.event. Host validates the file, imports it into its existing ArtifactStore, associates a Host-issued opaque artifactRef with the Event/Run and returns that reference in ingress.ack.
+The Host creates inbound/outbound staging directories and passes them in `host.initialize`. The Plugin writes raw inbound N1/N2 parts under the supplied inbound root and sends relative `stagingPath`, `slot`, `mediaType`, Content-ID when present and `byteLength` in `ingress.event`. Host validates the file and imports it into its ArtifactStore; any `artifactRef` remains Host-internal. `ingress.ack` returns only `eventId`, `disposition` and safe diagnostics, never `artifactRef`, Run ID or `responseObligationId`.
 
-For outbound delivery, Host stages only the authorized N1/N2 bytes under the outbound root and sends descriptors for the exact responseObligationId. Plugin reads those files, constructs the correct SBI multipart/Content-ID response and returns delivery.result.
-
-Rules:
-
-- no Base64 in NDJSON;
-- no Plugin-owned Artifact database or namespace;
-- no arbitrary Plugin reads from Host ArtifactStore;
-- no absolute paths, traversal or symlink escape;
-- no extra SHA-256, content digest or package-integrity mechanism;
-- Host owns Artifact custody, Run association, authorization and cleanup.
+For outbound delivery, Host stages only authorized N1/N2 bytes for the exact response obligation and sends `delivery.dispatch` with `deliveryId`, `responseObligationId`, `responseChannelId` and outbound descriptors. Plugin uses only the current `responseChannelId` waiter, constructs the correct SBI multipart/Content-ID response and returns `delivery.result` with `deliveryId` and disposition; it does not echo Host identities.
 
 ### 5.1 OpenAMSM slot vocabulary
 
@@ -241,27 +229,24 @@ The Plugin cannot call the Owner directly, grant itself access or turn an HTTP 2
 
 ## 7. Codec Tool ownership and qualification boundary
 
-Protocol Codec is a callable Tool capability, not an internal decoder embedded in the OpenAMSM Event Plugin.
+The shared Go codec has one implementation owner: `ca-client-tools`. Two separate surfaces must not be conflated.
 
-- The `ca-client-tools` Tool Plugin owns the shared Go codec implementation and the public Codec Tool contracts.
-- When the accepted codec API and Phase C consumer integration are available, expose the required NAS/NGAP/N2 Decode/Encode operations through the existing Tool Interface Package and `tools` extension.
-- The selected Skill calls Decode only when it needs protocol fields. If it does not, the original artifact reference is passed to the business Tool unchanged.
+### 7.1 T0 pre-selection classifier
+
+- The Event Plugin needs only the narrow 5GSM discriminator to map shared `UpdateSmContext` ingress to the correct normalized Event before Skill selection.
+- This is a library-level API owned by `ca-client-tools`, not an Agent-callable Tool, Capability, Provider binding, second Plugin or worker process.
+- It validates the F06 minimum header contract and returns only `0xC9`, `0xD1`, `0xD4`, or an explicit malformed/unsupported outcome. It does not parse IEs or expose business fields.
+- The exact exported Go package, API signature and version must be frozen and published by `ca-client-tools`. This consumer must not guess a function name/module version, copy a parser, call full `DecodeNAS` as a shortcut or create a second worker.
+- Until that API is published and pinned, production UpdateSMContext classification is blocked. Test doubles may verify Event mapping logic only.
+
+### 7.2 T2 on-demand Codec Tool
+
+- Full NAS/NGAP/N2 Decode/Encode operations are ordinary Tool Callables owned by the `ca-client-tools` Tool Plugin and published through its canonical Tool Interface Package and existing `tools` extension.
+- A selected Skill invokes a Codec Tool only after Skill/Run binding and only when it needs protocol fields, through the common Runtime Action Boundary. If it does not, the original artifact reference is passed to the business Tool unchanged.
+- Codec Result Schema/Profile and qualification are independent of the T0 discriminator. The original N1/N2 artifact remains unchanged and available for forwarding or response composition.
 - The Event Plugin remains responsible for SBI framing, multipart parsing, Content-ID association and raw byte handoff. It does not call a second codec worker or duplicate codec logic.
-- The SBI operation provides the base Event type, but UpdateSMContext can represent both Modify and UE-requested Release. The Event Plugin must therefore extract only the minimal NAS discriminator needed to normalize these cases before publishing the Event. This is not a Skill-selection decision or a full PDU/IE decode. Reuse the shared codec implementation from ca-client-tools for the exact supported message subset; if that discriminator is not supported, block the integration rather than add a second parser. The Host Resolver selects the Skill from the normalized Event. A future direct NAS/NGAP ingress is a separate scope.
 
-Reuse the shared Go codec from ca-client-tools when its public API is merged/released and Phase C consumer migration is complete. Do not copy Free5GC codec code or launch a second worker from this Plugin.
-
-Current evidence for ca-client-tools PR #39 (OPEN, not merged):
-
-| Namespace | Enumerated | CA tested | CA qualified |
-|---|---:|---:|---:|
-| NAS 5GSM | 20 | 8 | 8 |
-| N2 transfer roots | 41 | 7 | 7, within evidenced scope |
-| NGAP full PDU | 120 | 1 self-round-trip only | 0 |
-
-NAS qualified message types include 0xC1, 0xC2, 0xC3, 0xC9, 0xCB, 0xD1, 0xD3 and 0xD4. N2 qualification is limited to the seven evidenced roots/IE scopes. NGAP full-PDU qualification remains zero. Byte-identical re-encode alone is not qualification.
-
-PR #39 reports Phase B final pass, but it is OPEN and Phase C consumer migration is NOT_STARTED. Do not claim these APIs are already merged/released or claim complete NGAP support. OpenAMSM acceptance must use only the exact qualified NAS/N2 subset required by the flow and must include negative tests for callable-but-unqualified inputs.
+Current ca-client-tools PR #39 evidence: OPEN / non-Draft; Phase B FINAL_PASS / PHASE_C_READY; Phase C consumer migration NOT_STARTED. The Phase B result does not publish the T0 classifier API or the T2 Agent-callable Codec Tool contract.
 
 ## 8. Migration boundary
 
@@ -279,27 +264,31 @@ PR #39 reports Phase B final pass, but it is OPEN and Phase C consumer migration
 
 Do not move NsmfRunExecutor, Resident lifecycle, RunStore, resource mapping, Owner claims, MAS Callable mapping, ToolCatalog, Owner client, Receipt/Commit/Reconcile or CA-SL Runtime into this repository. Do not move the entire integrations/fivegc directory.
 
-## 9. Dependency and evidence status — 2026-11-25
+## 9. Dependency and evidence status — 2026-11-28
 
-| Dependency | Current state | Consequence |
+| Dependency | Current verified state | Consequence |
 |---|---|---|
-| ca-agent-next PR #1 | OPEN; documentation-only target contract | This PR aligns to the proposed v1alpha1 contract. Do not implement against an unmerged, changing contract; freeze it first. |
-| ca-skills PR #88 | OPEN; same-identifier CA-SL v1alpha5 refresh with optional Assurance and contract.when | The normative language refresh is not merged. |
-| ca-skill-compiler v2.1.0 | Released; support for refreshed contract.when and the portable checked-program Artifact is not established | Assurance import/when Resolver remains blocked until Compiler owner verifies/releases the required representation. SKILL.md-only import is Host-owned and bypasses Compiler. |
-| ca-client-tools v1.2.0 | Released Tool Interface Package and Provider runtime bindings; provider/v2 process | Reuse through the one Plugin Manager adapter. Real-NF SBI multipart binding through the Provider artifact channel remains NOT_VERIFIED. |
-| ca-client-tools PR #39 | OPEN; Phase B final pass, Phase C consumer migration NOT_STARTED | Codec consumer integration and release are pending. NAS 8 qualified; N2 7 scoped qualified; NGAP 0 full-PDU qualified. |
-| ca-agent-demo PR #246 | OPEN; synthetic Owner G5 22 passed; real isolated Scheme C G6 NOT_RUN/BLOCKED; G7 PARTIAL | Synthetic G5 is not real OpenAMSM E2E and does not satisfy migration acceptance. |
+| ca-agent-next Plugin Package/IPC v1alpha1 | Merged normative contract; current F05/F06/SR-009 design candidate is in PR #115 `integration/issue-50-mainline-convergence` (Draft, not main) | Build only against the pinned current candidate and the merged IPC contract; do not use obsolete `docs/architecture-baseline-20261125` paths. |
+| ca-agent-next PR #115 | OPEN / Draft; mainline integration candidate | The central SR/F05/F06 snapshot is not yet merged to main; pin the reviewed SHA in every implementation report. |
+| ca-client-tools PR #39 | OPEN / non-Draft; Phase B FINAL_PASS / PHASE_C_READY; Phase C consumer migration NOT_STARTED | Does not by itself publish the T0 classifier API or the T2 Agent-callable Codec Tool contract. |
+| ca-client-tools Issue #44 | OPEN; request to publish the narrow T0 5GSM classifier API | Production AC-009-04 remains blocked until the owner freezes and publishes the exact Go API and version. |
+| ca-client-tools v1.2.0 | Provider v2 / Interface Package implementation | Consume only through the single Next Plugin Manager adapter; no second Provider Manager or direct Owner client. |
+| ca-openamsm-plugin PR #1 | OPEN / Draft; design documentation only | No Go runtime, SBI listener migration, Artifact Handoff implementation or module acceptance is claimed. |
+| Next Python Host / ArtifactStore / Channel | NOT_IMPLEMENTED for the required OpenAMSM path | Plugin module tests use a test Host; real Host integration remains a later system gate. |
+| OpenAMSM real Create/Modify/UE Release E2E | NOT_RUN | Must be tracked by SR-011 after the required Host/Owner/Provider/Skill artifacts are ready. |
 
 No Production Qualification is claimed.
 
 ## 10. Acceptance sequence
 
-1. Freeze and merge the ca-agent-next Plugin Package/IPC and Artifact Handoff contract. This PR is aligned to its current proposal.
-2. Pass ca-agent-next Core and Generic Echo E2E, including Skill-first selection, both modes through one Runtime Action Boundary, and Plugin Event/Delivery/Tools.
-3. Freeze the exact OpenAMSM OpenAPI operationIds, normalized Event fields, NAS discriminator fields, multipart slots, externalRequestId and continuation correlation.
-4. Implement the independent Go Plugin against the exact Next package and IPC contract.
-5. Integrate ca-client-tools v1.2.0 through the unified Plugin Manager tools adapter; complete the relevant Codec Phase C consumer integration and publish only the exact accepted Codec Tool contracts.
-6. Pass fixture/protocol-vector tests for Create, Modify, Release and continuation, including both the no-decode path and a Skill-driven Codec invocation path. Verify the decoded projection never replaces the original artifact.
-7. Pass real isolated OpenAMSM Create → Modify → Release E2E with one UE/PSI, raw N1/N2, Owner Receipt/Commit Proof, UNKNOWN/Reconcile and zero duplicate mutation.
+1. Use the merged Plugin Package/IPC v1alpha1 contract and the pinned Next F05/F06/SR-009 candidate; no legacy IPC or compatibility path.
+2. After the current SR-009 incremental review approves the scoped module design, implement the Go Event/Delivery Plugin independently with a test Host and protocol fixtures. This module work does not wait for Echo, Next Python Host, Owner or Provider system integration.
+3. Implement Create JSON/multipart, Content-ID/slot mapping, raw N1/N2 staging, three normalized Event declarations, HTTP/2 responseChannel waiters and Delivery serialization.
+4. For UpdateSMContext, keep the production classifier adapter disabled/fail-closed until ca-client-tools#44 publishes its exact T0 classifier API; test doubles may cover Event mapping but cannot claim production AC-009-04 PASS. Do not copy a NAS parser or call full DecodeNAS.
+5. Keep T2 full Codec Tool consumption separate: it is invoked only by a selected Skill through the Runtime Action Boundary after its canonical Interface Package/Provider contract is published.
+6. Run the SR-009 module tests with the test Host/peer and report each AC separately. Host Run/dedup/responseObligation, Next ArtifactStore/Channel, Owner Receipt/Proof/Reconcile and real NF E2E remain outside this module Goal and are tracked by SR-010/SR-011.
+7. Run real isolated OpenAMSM Create → Modify → UE-requested Release only under SR-011 after the required Host/Owner/Provider/Skill artifacts are available; do not claim Production Qualification.
+
+The new Plugin is the second independent business used to prove zero Core business coupling. Do not require a separate third Echo-like business after OpenAMSM.
 
 The new Plugin is the second independent business used to prove zero Core business coupling. Do not require a separate third Echo-like business after OpenAMSM.
