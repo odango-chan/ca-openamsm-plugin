@@ -2,11 +2,11 @@
 
 **Status:** design-only proposal aligned to ca-agent-next. No Go runtime, SBI listener migration, Artifact Handoff implementation or E2E acceptance is claimed.
 
-**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115; not yet merged to `main`), snapshot `f094e1095b1c14cfe230ff5715dbeeb1009a87c5`.
-- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
-- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/f094e1095b1c14cfe230ff5715dbeeb1009a87c5/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
+**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115; not yet merged to `main`), snapshot `39e0bb018e8cd1cc282da3853636c5666dd9a86b`.
+- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
+- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/39e0bb018e8cd1cc282da3853636c5666dd9a86b/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
 
 The Plugin Package / IPC v1alpha1 contract is already merged in Next. PR #115 carries the current central design integration candidate and remains Draft.
 
