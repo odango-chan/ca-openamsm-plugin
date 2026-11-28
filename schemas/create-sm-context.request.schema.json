@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:connectionagent:plugin:openamsm:event:nsmf.create-sm-context",
+  "title": "nsmf.create-sm-context payload",
+  "description": "Normalized F06 §4.1 payload for PostSmContexts. request preserves the original SmContextCreateData JSON object; the Plugin does not add defaults or remove fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operationId", "request"],
+  "properties": {
+    "operationId": { "const": "PostSmContexts" },
+    "request": {
+      "type": "object",
+      "description": "Verbatim SmContextCreateData JSON object from the fixed TS 29.502 V19.5.0 OpenAPI source.",
+      "additionalProperties": true
+    }
+  }
+}

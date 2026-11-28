@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:connectionagent:plugin:openamsm:event:nsmf.update-sm-context.continuation",
+  "title": "nsmf.update-sm-context.continuation payload",
+  "description": "Normalized F06 §4.1 continuation payload. It carries N1 PDU Session Release Complete (0xD4) and/or one of the three N2 completion responses; both may appear together for the same continuation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operationId", "smContextRef", "request", "discriminator"],
+  "properties": {
+    "operationId": { "const": "UpdateSmContext" },
+    "smContextRef": { "type": "string", "minLength": 1 },
+    "request": {
+      "type": "object",
+      "description": "Verbatim SmContextUpdateData JSON object from the fixed TS 29.502 V19.5.0 OpenAPI source.",
+      "additionalProperties": true
+    },
+    "discriminator": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "n1MessageType": { "const": "0xD4" },
+        "n2SmInfoType": {
+          "enum": ["PDU_RES_SETUP_RSP", "PDU_RES_MOD_RSP", "PDU_RES_REL_RSP"]
+        }
+      },
+      "anyOf": [
+        { "required": ["n1MessageType"] },
+        { "required": ["n2SmInfoType"] }
+      ]
+    }
+  }
+}
