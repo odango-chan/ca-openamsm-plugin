@@ -2,14 +2,14 @@
 
 **Status:** module implementation IMPLEMENTED on `feature/issue-2-sr-009-openamsm-plugin`. Module AC evidence is recorded in [AC-009 evidence](evidence/AC-009-verification.md); production T0 classifier binding is `BLOCKED_EXTERNAL_INPUT`; Next Host integration and real E2E remain NOT_RUN.
 
-**Current central design candidate:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115, Draft, not merged to `main`), fixed Head `ba5354c575394295cfa7a790922e02422b0c96f4`, Base `b2ed5eb84114f9c2556a0cd06ed974887b1b70ad`.
+**Current central design comparison snapshot:** `ca-agent-next` `integration/issue-50-mainline-convergence` (PR #115, Draft, not merged to `main`), immutable revision `f8de225054895f53b30f73aa721bd1ca9290813e`, Base `b2ed5eb84114f9c2556a0cd06ed974887b1b70ad`.
 
-- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/ba5354c575394295cfa7a790922e02422b0c96f4/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
-- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/ba5354c575394295cfa7a790922e02422b0c96f4/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/ba5354c575394295cfa7a790922e02422b0c96f4/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
-- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/ba5354c575394295cfa7a790922e02422b0c96f4/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
+- [Plugin Package / IPC v1alpha1](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%A7%84%E8%8C%83/%E6%8F%92%E4%BB%B6%E5%8C%85%E4%B8%8E%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83.md)
+- [F05 Context / Artifact staging](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F05-Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86/Context%E4%B8%8EArtifact%E7%AE%A1%E7%90%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [F06 OpenAMSM Event contract](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6/F06-%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8E%E9%9B%86%E6%88%90/%E4%B8%9A%E5%8A%A1%E6%8E%A5%E5%85%A5%E4%B8%8EOpenAMSM%E9%9B%86%E6%88%90%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6.md)
+- [SR-009 module requirements](https://github.com/odango-chan/ca-agent-next/blob/f8de225054895f53b30f73aa721bd1ca9290813e/docs/SR/SR-009-OpenAMSM%20SBI%20%E4%BA%8B%E4%BB%B6%E6%8F%92%E4%BB%B6%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BA%A7%E7%89%A9%E4%BA%A4%E6%8E%A5.md)
 
-The Plugin Package / IPC v1alpha1 contract is already merged in Next. The current F05/F06/SR-009 snapshot is the pinned PR #115 Head above. F06 §4.1 is the **frozen** Event/operation/discriminator/slot authority: the implementation generates its schemas and fixtures from it and does not re-open the mapping as a "pre-implementation check".
+The Plugin Package / IPC v1alpha1 contract is already merged in Next. The F05 v0.4.13 / F06 v0.3.9 / SR-009 v0.2.15 snapshot above is a *later design comparison* (not an assertion that original tested Go code at 4a2edd3 consumed this newer Head). F06 §4.1 is the **frozen** Event/operation/discriminator/slot authority: the implementation generates its schemas and fixtures from it and does not re-open the mapping as a "pre-implementation check".
 
 This repository does not define another Plugin API, IPC version, Skill selector, Artifact service or Tool contract.
 
@@ -176,8 +176,8 @@ NsmfRunExecutor, Resident lifecycle, RunStore, resource mapping, Owner claims, M
 
 | Dependency | Current verified state | Consequence |
 |---|---|---|
-| ca-agent-next Plugin Package/IPC v1alpha1 | Merged normative contract; current F05/F06/SR-009 candidate is PR #115 Head `ba5354c` (Draft, not main) | Build only against the pinned candidate and merged IPC contract |
-| ca-agent-next PR #115 | OPEN / Draft / MERGEABLE; 3/3 CI SUCCESS at `ba5354c`; not merged | The central snapshot is not on `main`; every report pins `ba5354c` |
+| ca-agent-next Plugin Package/IPC v1alpha1 | Merged normative contract; current comparison F05/F06/SR-009 snapshot is PR #115 `f8de225` (Draft, not main), original module tests pinned `ba5354c` | Verify changed design semantics explicitly; do not retroactively claim the original test-Host run used the newer revision |
+| ca-agent-next PR #115 | OPEN / Draft / NOT MERGED; compare against immutable `f8de225` | Its 3 CI workflows were SUCCESS at `f8de225` when last checked; rerun/live-check latest Head before real integration, never assume module test proof equals product qualification |
 | ca-client-tools PR #39 | OPEN / non-Draft; Phase B FINAL_PASS / PHASE_C_READY; Phase C consumer migration NOT_STARTED | Does not publish the T0 classifier API or the T2 Agent-callable Codec contract |
 | ca-client-tools Issue #44 | OPEN; requests the narrow T0 5GSM classifier API | Production AC-009-04 remains `BLOCKED_EXTERNAL_INPUT` |
 | ca-client-tools v1.2.0 | Provider v2 / Interface Package implementation | Consume only through the single Next Plugin Manager adapter |
@@ -199,3 +199,5 @@ No Production Qualification is claimed.
 7. Run real isolated OpenAMSM Create → Modify → UE-requested Release only under SR-011 after the required artifacts are available; do not claim Production Qualification.
 
 The new Plugin is the second independent business used to prove zero Core business coupling. No separate third Echo-like business is required after OpenAMSM.
+
+**Stack reconciliation (2026-11-28):** PR #1 design update `8fc1cd2d` is now an explicit parent of the PR #3 integration commit. Reused Go/Schema/test files remain byte-identical to the original PR #3 code Head `161ffe6344baa325f004899718392dfa49cce97e`; only documentation comparison pointers were updated. OAP-11/OAP-12/OAP-14 remain system/phase gates, not module prerequisites.

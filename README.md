@@ -3,8 +3,8 @@
 Independent Go Event/Delivery Plugin for OpenAMSM SBI protocol ingress and response delivery.
 
 **Normative Host contract:** ca-agent-next Plugin Package / Plugin IPC v1alpha1 (already merged) and the F05 local staging contract.
-**Pinned central design candidate:** `ca-agent-next` PR #115 `integration/issue-50-mainline-convergence`, Head `ba5354c575394295cfa7a790922e02422b0c96f4` (Base `b2ed5eb84114f9c2556a0cd06ed974887b1b70ad`). PR #115 is Draft and not merged to `main`.
-**Pinned plugin design:** this repository PR #1, Head `5bb987aec6a643d453e7d2f111c04c4f02dbcd2f`.
+**Current central design comparison snapshot (not the original tested source contract):** `ca-agent-next` PR #115 `integration/issue-50-mainline-convergence`, fixed revision `f8de225054895f53b30f73aa721bd1ca9290813e` (Base `b2ed5eb84114f9c2556a0cd06ed974887b1b70ad`). PR #115 is Draft and not merged to `main`.
+**Merged-into-this-stack design revision:** this repository PR #1, Head `8fc1cd2d2530f2fe792f6fe330d5a23c2fe98106`.
 **Independent review:** ca-agent-next [Issue #116](https://github.com/odango-chan/ca-agent-next/issues/116#issuecomment-7235978519) — `APPROVE_FOR_READY（限定范围）`, 0 P0 / 0 P1 / 11 P2.
 **Implementation tracking:** this repository [Issue #2](https://github.com/odango-chan/ca-openamsm-plugin/issues/2), branch `feature/issue-2-sr-009-openamsm-plugin`.
 
@@ -106,3 +106,4 @@ The module tests use a real test Host (spawns the built binary and speaks IPC v1
 `n2Ext1.request` completes the F06 §4.1 `n2SmInfoExt1.contentId` mapping (P2-01). Create and Update declare it optional; Update also declares the optional `n2.request`. A continuation Ext1 slot has no frozen contract and is **NOT_RUN** — the ingress fails closed with `N2_EXT1_CONTINUATION_UNSPECIFIED` rather than guessing a slot or silently dropping bytes.
 
 Documents: [architecture](docs/architecture.md) · [implementation notes](docs/implementation.md) · [acceptance](docs/acceptance.md) · [module AC evidence](docs/evidence/AC-009-verification.md)
+**Snapshot distinction (2026-11-28):** the tested module code and its original design/source pins remain recorded unchanged in [AC-009 evidence](docs/evidence/AC-009-verification.md). The updated PR #1 design adds the Next F05 v0.4.13 / F06 v0.3.9 / IPC v0.2.8 boundaries; its inclusion as a merge parent does not retroactively qualify code for Next Host, production classifier or real 5GC E2E.

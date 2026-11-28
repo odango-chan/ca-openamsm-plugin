@@ -109,3 +109,7 @@ Eight concurrent HTTP/2 streams multiplexed over one h2c connection with distinc
 ## 5. Non-claims
 
 Test Host PASS ≠ Next Python Host PASS. Module PASS ≠ product AC PASS. Module PASS ≠ OpenAMSM/AMF/UPF E2E PASS. The test-only classifier double is not a production classifier PASS. No Base64, no extra SHA-256, no Plugin-owned ArtifactStore or `artifactRef`, no second Codec or IPC protocol was introduced.
+
+## 6. Evidence pin preservation after stacked design update
+
+This is a fixed historical record for source `4a2edd386d4ed9bdcacedd122b47285af13c49e1` and its original Next `ba5354c` / PR #1 `5bb987a` design pins. A later docs-only stacked reconciliation incorporates the revised PR #1 design `8fc1cd2d2530f2fe792f6fe330d5a23c2fe98106`; current Next comparison snapshot is `f8de225054895f53b30f73aa721bd1ca9290813e`. Do **not** recast these older module tests as certifying the newer Next contract or Host-owned obligation identity, and do not treat module PASS as real E2E, Production Qualification or ca-client-tools#44 publication.

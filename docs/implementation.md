@@ -109,3 +109,7 @@ The production classifier is `event.BlockedClassifier`. It always returns `BLOCK
 | Symlink-escape test on Windows without symlink privilege | SKIP | The test skips when the host cannot create a symlink; Linux CI covers it |
 
 No result in this repository may be reported as Next Python Host PASS, product AC PASS, OM/EX PASS or Production Qualification.
+
+## 9. Later design-base reconciliation (2026-11-28)
+
+The **original implementation/tested source** remains `4a2edd386d4ed9bdcacedd122b47285af13c49e1`, based on the earlier Next design `ba5354c` and Plugin design `5bb987a`; do not rewrite historical pins as if the test run exercised a later contract. The updated source design PR #1 at `8fc1cd2d2530f2fe792f6fe330d5a23c2fe98106` was merged into the existing PR #3 branch without touching Go, Schema or test files. The current central comparison design is Next PR #115 at `f8de225054895f53b30f73aa721bd1ca9290813e` (F05 v0.4.13/F06 v0.3.9/IPC v0.2.8/SR-009 v0.2.15). Only the original module CI was PASS; changed/new contract subcases still require separate tests or remain NOT_RUN, and the Host three-way obligation identity is not visible to this Plugin.

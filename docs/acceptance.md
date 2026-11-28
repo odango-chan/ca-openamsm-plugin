@@ -1,7 +1,7 @@
 # OpenAMSM Plugin acceptance
 
 **Status:** module implementation IMPLEMENTED; module AC tests PASS on the implementation branch; production T0 classifier binding `BLOCKED_EXTERNAL_INPUT`; Next Host integration and real E2E NOT_RUN.
-**Normative contract:** ca-agent-next Plugin Package / Plugin IPC v1alpha1 and F05 staging. Central design pinned to Next PR #115 Head `ba5354c575394295cfa7a790922e02422b0c96f4`; plugin design pinned to this repository PR #1 Head `5bb987aec6a643d453e7d2f111c04c4f02dbcd2f`.
+**Normative contract:** ca-agent-next Plugin Package / Plugin IPC v1alpha1 and F05 staging. Current design *comparison* revision is Next PR #115 `f8de225054895f53b30f73aa721bd1ca9290813e`; updated source design for this stacked branch is PR #1 `8fc1cd2d2530f2fe792f6fe330d5a23c2fe98106`.
 **Evidence:** [AC-009-verification](evidence/AC-009-verification.md).
 **Scope:** Demo-level protocol adapter. No Production Qualification claim.
 
@@ -71,3 +71,5 @@ Do not add:
 - legacy compatibility, Marketplace, automatic downloads, hot reload or production-grade DFX.
 
 Keep basic manifest/Schema/version/reference validation, path containment, explicit process configuration, useful logs and the minimum correlation required by the actual SBI operation.
+
+**2026-11-28 stacked source reconciliation:** PR #1 design head `8fc1cd2d` is included as an ancestry parent; this note does **not** revise the historical module test source/pins in the evidence report. OAP-11/12/14 and the Host `responseObligationId` authority remain system/phase-only, not assertions of module PASS. The central `f8de225` snapshot is a comparison point, not an already-merged main baseline.
